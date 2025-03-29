@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>网站设置管理 - 网址导航系统</title>
+    <link href="https://lf3-cdn-tos.bytecdntp.com/cdn/expire-1-M/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link href="https://lf6-cdn-tos.bytecdntp.com/cdn/expire-100-M/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background-color: #f3f4f6;
+        }
+        .sidebar {
+            width: 250px;
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            background-color: #1a1a1a;
+            color: white;
+            transition: all 0.3s ease;
+        }
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+        .nav-link {
+            transition: all 0.2s ease;
+        }
+        .nav-link:hover {
+            background-color: #2d2d2d;
+        }
+        .nav-link.active {
+            background-color: #2d2d2d;
+            border-left: 4px solid #4f46e5;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border-radius: 8px;
+            width: 80%;
+            max-width: 500px;
+            position: relative;
+        }
+        .close {
+            position: absolute;
+            right: 20px;
+            top: 10px;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close:hover {
+            color: #666;
+        }
+        /* 图片预览样式 */
+        .preview-container {
+            position: relative;
+            display: inline-block;
+            margin-top: 10px;
+        }
+        .preview-image {
+            max-width: 200px;
+            max-height: 200px;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+        }
+        .remove-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        /* 自定义表单样式 */
+        .form-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 0.5rem;
+        }
+        .form-input {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+            background-color: #fff;
+            color: #1f2937;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+        .form-textarea {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+            background-color: #fff;
+            color: #1f2937;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+        .required-mark {
+            color: #ef4444;
+        }
+        .form-hint {
+            font-size: 0.75rem;
+            color: #6b7280;
+            margin-top: 0.25rem;
+        }
+        .alert {
+            display: none;
+            padding: 1rem;
+            border-radius: 0.375rem;
+            margin-bottom: 1rem;
+        }
+        .alert-success {
+            background-color: #d1fae5;
+            border: 1px solid #34d399;
+            color: #065f46;
+        }
+        .alert-error {
+            background-color: #fee2e2;
+            border: 1px solid #f87171;
+            color: #b91c1c;
+        }
+    </style>
+</head>
+<body>
+    <!-- 侧边栏 -->
+    <div class="sidebar">
+        <div class="p-4">
+            <h1 class="text-xl font-bold">网址导航系统</h1>
+        </div>
+        <nav class="mt-4">
+            <a href="/admin/index.html" class="nav-link flex items-center px-4 py-3 text-gray-300 hover:text-white">
+                <i class="fas fa-home mr-3"></i>
+                仪表盘
+            </a>
+            <a href="/admin/sites.html" class="nav-link flex items-center px-4 py-3 text-gray-300 hover:text-white">
+                <i class="fas fa-globe mr-3"></i>
+                网址管理
+            </a>
+            <a href="/admin/categories.html" class="nav-link flex items-center px-4 py-3 text-gray-300 hover:text-white">
+                <i class="fas fa-folder mr-3"></i>
+                分类管理
+            </a>
+            <a href="/admin/tags.html" class="nav-link flex items-center px-4 py-3 text-gray-300 hover:text-white">
+                <i class="fas fa-tags mr-3"></i>
+                标签管理
+            </a>
+            <a href="/admin/nav-menu.html" class="nav-link flex items-center px-4 py-3 text-gray-300 hover:text-white">
+                <i class="fas fa-bars mr-3"></i>
+                导航菜单
+            </a>
+            <a href="/admin/settings.html" class="nav-link active flex items-center px-4 py-3 text-gray-300 hover:text-white">
+                <i class="fas fa-cog mr-3"></i>
+                网站设置
+            </a>
+            <button id="user-settings-btn" class="nav-link w-full flex items-center px-4 py-3 text-gray-300 hover:text-white mt-auto">
+                <i class="fas fa-user-cog mr-3"></i>
+                用户设置
+            </button>
+            <button id="logout-btn" class="nav-link w-full flex items-center px-4 py-3 text-gray-300 hover:text-white">
+                <i class="fas fa-sign-out-alt mr-3"></i>
+                退出登录
+            </button>
+        </nav>
+    </div>
+
+    <!-- 用户设置模态框 -->
+    <div id="user-settings-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 class="text-2xl font-bold mb-4">修改密码</h2>
+            <form id="change-password-form" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">当前密码</label>
+                    <input type="password" id="current-password" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 py-3" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">新密码</label>
+                    <input type="password" id="new-password" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 py-3" required>
+                    <p class="mt-1 text-sm text-gray-500">
+                        密码长度至少需要6个字符
+                    </p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">确认新密码</label>
+                    <input type="password" id="confirm-password" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 py-3" required>
+                </div>
+                <div class="flex justify-end space-x-3">
+                    <button type="button" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50" onclick="closeUserSettingsModal()">取消</button>
+                    <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 主要内容区域 -->
+    <div class="main-content">
+        <!-- 顶部栏 -->
+        <div class="bg-white shadow-sm rounded-lg p-4 mb-6">
+            <div class="flex justify-between items-center">
+                <h2 class="text-2xl font-bold text-gray-900">网站设置</h2>
+            </div>
+        </div>
+
+        <!-- 提示信息 -->
+        <div id="success-alert" class="alert alert-success">
+            <strong>成功!</strong> 网站设置已更新。
+        </div>
+        <div id="error-alert" class="alert alert-error">
+            <strong>错误!</strong> <span id="error-message"></span>
+        </div>
+
+        <!-- 设置表单 -->
+        <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+            <div class="p-6">
+                <form id="settings-form" class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="form-label">
+                                网站名称 <span class="required-mark">*</span>
+                            </label>
+                            <input type="text" id="site-name" name="site_name" class="form-input" required>
+                        </div>
+                        <div>
+                            <label class="form-label">GitHub链接</label>
+                            <input type="url" id="github-url" name="github_url" class="form-input">
+                        </div>
+                        <div>
+                            <label class="form-label">网站描述</label>
+                            <textarea id="site-description" name="site_description" class="form-textarea" rows="3"></textarea>
+                        </div>
+                        <div>
+                            <label class="form-label">Twitter链接</label>
+                            <input type="url" id="twitter-url" name="twitter_url" class="form-input">
+                        </div>
+                        <div>
+                            <label class="form-label">Hero标题</label>
+                            <input type="text" id="hero-title" name="hero_title" class="form-input" placeholder="例如：乔木精选推荐">
+                            <p class="form-hint">显示在首页Hero区域的大标题</p>
+                        </div>
+                        <div>
+                            <label class="form-label">Hero子标题</label>
+                            <input type="text" id="hero-subtitle" name="hero_subtitle" class="form-input" placeholder="例如：发现最佳AI、阅读与知识管理工具，提升工作效率">
+                            <p class="form-hint">显示在首页Hero区域的副标题</p>
+                        </div>
+                        <div>
+                            <label class="form-label">底部文字</label>
+                            <textarea id="footer-text" name="footer_text" class="form-textarea" rows="3"></textarea>
+                            <p class="form-hint">可以使用HTML标签，如 &lt;a href="..."&gt;链接文字&lt;/a&gt;</p>
+                        </div>
+                        <div>
+                            <label class="form-label">联系邮箱</label>
+                            <input type="email" id="email" name="email" class="form-input">
+                        </div>
+                        <div>
+                            <label class="form-label">联系二维码</label>
+                            <input type="file" id="contact-qrcode" name="contact_qrcode" accept="image/*" class="form-input py-1.5">
+                            <p class="form-hint">推荐尺寸: 300x300像素, 支持PNG/JPG格式</p>
+                            <div id="contact-qrcode-preview" class="preview-container hidden">
+                                <img src="" alt="联系二维码预览" class="preview-image" id="contact-qrcode-img">
+                                <button type="button" class="remove-btn" id="remove-contact-qrcode">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="form-label">打赏二维码</label>
+                            <input type="file" id="donation-qrcode" name="donation_qrcode" accept="image/*" class="form-input py-1.5">
+                            <p class="form-hint">推荐尺寸: 300x300像素, 支持PNG/JPG格式</p>
+                            <div id="donation-qrcode-preview" class="preview-container hidden">
+                                <img src="" alt="打赏二维码预览" class="preview-image" id="donation-qrcode-img">
+                                <button type="button" class="remove-btn" id="remove-donation-qrcode">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex justify-end mt-6">
+                        <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 flex items-center" id="save-btn">
+                            <i class="fas fa-save mr-2"></i>
+                            保存设置
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 检查登录状态
+        function checkAuth() {
+            const token = localStorage.getItem('token');
+            
+            if (!token) {
+                window.location.href = '/admin/login.html';
+                return null;
+            }
+            
+            fetch('/api/auth/check', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Token invalid');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (!data.authenticated) {
+                    throw new Error('Not authenticated');
+                }
+            })
+            .catch(error => {
+                console.error('认证失败:', error);
+                localStorage.removeItem('token');
+                window.location.href = '/admin/login.html';
+            });
+            
+            return token;
+        }
+
+        // 显示提示消息
+        function showAlert(type, message = '') {
+            const alertElement = document.getElementById(type + '-alert');
+            alertElement.style.display = 'block';
+            
+            if (type === 'error') {
+                document.getElementById('error-message').textContent = message;
+            }
+            
+            setTimeout(() => {
+                alertElement.style.display = 'none';
+            }, 5000);
+        }
+
+        // 二维码图片预览功能
+        function setupFilePreview(fileInput, previewContainer, previewImg) {
+            // 保存文件的全局变量
+            window['selected_' + fileInput.id + '_file'] = null;
+            
+            fileInput.addEventListener('change', function() {
+                if (this.files && this.files[0]) {
+                    // 保存文件到全局变量
+                    window['selected_' + this.id + '_file'] = this.files[0];
+                    
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        previewImg.src = e.target.result;
+                        previewContainer.classList.remove('hidden');
+                    };
+                    reader.readAsDataURL(this.files[0]);
+                }
+            });
+        }
+
+        // 移除二维码图片
+        function setupRemoveButton(removeBtn, fileInput, previewContainer) {
+            removeBtn.addEventListener('click', function() {
+                fileInput.value = '';
+                previewContainer.classList.add('hidden');
+                // 清除全局变量中保存的文件
+                window['selected_' + fileInput.id + '_file'] = null;
+                // 添加一个隐藏字段，标记需要删除该图片
+                const hiddenInput = document.createElement('input');
+                hiddenInput.type = 'hidden';
+                hiddenInput.name = fileInput.name + '_remove';
+                hiddenInput.value = '1';
+                fileInput.parentNode.appendChild(hiddenInput);
+            });
+        }
+
+        // 获取设置数据
+        async function fetchSettings() {
+            try {
+                const response = await fetch('/api/settings');
+                if (!response.ok) {
+                    throw new Error('获取设置失败');
+                }
+                const settings = await response.json();
+                populateForm(settings);
+            } catch (error) {
+                console.error('获取设置错误:', error);
+                showAlert('error', '无法加载网站设置，请刷新页面重试');
+            }
+        }
+
+        // 填充表单数据
+        function populateForm(settings) {
+            document.getElementById('site-name').value = settings.site_name || '';
+            document.getElementById('site-description').value = settings.site_description || '';
+            document.getElementById('footer-text').value = settings.footer_text || '';
+            document.getElementById('github-url').value = settings.github_url || '';
+            document.getElementById('twitter-url').value = settings.twitter_url || '';
+            document.getElementById('email').value = settings.email || '';
+            document.getElementById('hero-title').value = settings.hero_title || '';
+            document.getElementById('hero-subtitle').value = settings.hero_subtitle || '';
+
+            // 处理联系二维码
+            if (settings.contact_qrcode) {
+                document.getElementById('contact-qrcode-img').src = settings.contact_qrcode;
+                document.getElementById('contact-qrcode-preview').classList.remove('hidden');
+            }
+
+            // 处理打赏二维码
+            if (settings.donation_qrcode) {
+                document.getElementById('donation-qrcode-img').src = settings.donation_qrcode;
+                document.getElementById('donation-qrcode-preview').classList.remove('hidden');
+            }
+
+            // 保存设置ID用于更新
+            document.getElementById('settings-form').dataset.id = settings.id;
+        }
+
+        // 提交表单
+        document.getElementById('settings-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const token = checkAuth();
+            if (!token) return;
+            
+            const settingsId = this.dataset.id;
+
+            if (!settingsId) {
+                showAlert('error', '设置ID不存在，请刷新页面重试');
+                return;
+            }
+
+            // 准备表单数据
+            const formData = new FormData(this);
+            
+            // 添加保存的文件（如果有）
+            if (window.selected_contact_qrcode_file) {
+                formData.set('contact_qrcode', window.selected_contact_qrcode_file);
+            }
+            
+            if (window.selected_donation_qrcode_file) {
+                formData.set('donation_qrcode', window.selected_donation_qrcode_file);
+            }
+            
+            try {
+                // 显示保存按钮加载状态
+                const saveBtn = document.getElementById('save-btn');
+                const originalBtnText = saveBtn.innerHTML;
+                saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> 保存中...';
+                saveBtn.disabled = true;
+
+                // 发送更新请求
+                const response = await fetch(`/api/settings/${settingsId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: formData
+                });
+
+                // 恢复保存按钮状态
+                saveBtn.innerHTML = originalBtnText;
+                saveBtn.disabled = false;
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || '更新设置失败');
+                }
+
+                // 处理成功响应
+                const updatedSettings = await response.json();
+                populateForm(updatedSettings);
+                showAlert('success');
+            } catch (error) {
+                console.error('更新设置错误:', error);
+                showAlert('error', error.message);
+            }
+        });
+
+        // 用户设置相关函数
+        function openUserSettingsModal() {
+            document.getElementById('user-settings-modal').style.display = 'block';
+        }
+
+        function closeUserSettingsModal() {
+            document.getElementById('user-settings-modal').style.display = 'none';
+            document.getElementById('change-password-form').reset();
+        }
+
+        // 修改密码表单提交
+        document.getElementById('change-password-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const currentPassword = document.getElementById('current-password').value;
+            const newPassword = document.getElementById('new-password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+            
+            // 简化的密码验证规则
+            if (newPassword.length < 6) {
+                Swal.fire({
+                    title: '提示',
+                    text: '新密码长度至少需要6个字符',
+                    icon: 'warning'
+                });
+                return;
+            }
+            
+            if (newPassword !== confirmPassword) {
+                Swal.fire({
+                    title: '提示',
+                    text: '两次输入的新密码不一致',
+                    icon: 'warning'
+                });
+                return;
+            }
+            
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch('/api/auth/change-password', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        current_password: currentPassword,
+                        new_password: newPassword
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || '修改密码失败');
+                }
+                
+                Swal.fire({
+                    title: '成功',
+                    text: '密码修改成功',
+                    icon: 'success'
+                });
+                
+                closeUserSettingsModal();
+                document.getElementById('change-password-form').reset();
+            } catch (error) {
+                console.error('修改密码失败:', error);
+                Swal.fire({
+                    title: '提示',
+                    text: error.message || '修改密码失败，请检查当前密码是否正确',
+                    icon: 'warning'
+                });
+            }
+        });
+
+        // 用户设置按钮点击事件
+        document.getElementById('user-settings-btn').addEventListener('click', openUserSettingsModal);
+
+        // 关闭按钮点击事件
+        document.querySelector('#user-settings-modal .close').addEventListener('click', closeUserSettingsModal);
+
+        // 点击模态框外部关闭
+        window.addEventListener('click', function(e) {
+            const modal = document.getElementById('user-settings-modal');
+            if (e.target === modal) {
+                closeUserSettingsModal();
+            }
+        });
+
+        // 退出登录
+        document.getElementById('logout-btn').addEventListener('click', function() {
+            Swal.fire({
+                title: '确认退出',
+                text: '您确定要退出登录吗？',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: '确定退出',
+                cancelButtonText: '取消'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('user');
+                    window.location.href = '/admin/login.html';
+                }
+            });
+        });
+
+        // 页面加载时执行
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAuth();
+            fetchSettings();
+
+            // 设置二维码预览
+            setupFilePreview(
+                document.getElementById('contact-qrcode'),
+                document.getElementById('contact-qrcode-preview'),
+                document.getElementById('contact-qrcode-img')
+            );
+            
+            setupFilePreview(
+                document.getElementById('donation-qrcode'),
+                document.getElementById('donation-qrcode-preview'),
+                document.getElementById('donation-qrcode-img')
+            );
+
+            // 设置移除二维码按钮
+            setupRemoveButton(
+                document.getElementById('remove-contact-qrcode'),
+                document.getElementById('contact-qrcode'),
+                document.getElementById('contact-qrcode-preview')
+            );
+            
+            setupRemoveButton(
+                document.getElementById('remove-donation-qrcode'),
+                document.getElementById('donation-qrcode'),
+                document.getElementById('donation-qrcode-preview')
+            );
+        });
+    </script>
+</body>
+</html>
