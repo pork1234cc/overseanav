@@ -62,74 +62,11 @@ async function initializeDB() {
   try {
     db = await open({
       filename: join(__dirname, 'database.sqlite'),
-      driver: sqlite3.Database
+      driver: sqlite3.Database,
+      mode: sqlite3.OPEN_READONLY // 只读模式
     });
-
-    // 检查是否已经初始化过数据库
-    const hasInitialized = await db.get("SELECT name FROM sqlite_master WHERE type='table' AND name='sites'");
     
-    if (!hasInitialized) {
-      console.log('首次运行，初始化数据库...');
-      // 执行数据库初始化 SQL
-      const initSQL = await readFile(join(__dirname, 'database.sql'), 'utf8');
-      // 分割SQL语句并逐个执行
-      const statements = initSQL.split(';').filter(stmt => stmt.trim());
-      for (const statement of statements) {
-        if (statement.trim()) {
-          await db.exec(statement + ';');
-        }
-      }
-    }
-
-    // 确保users表存在
-    const userTable = await db.get("SELECT name FROM sqlite_master WHERE type='table' AND name='users'");
-    
-    if (!userTable) {
-      console.log('创建users表...');
-      await db.exec(`
-        CREATE TABLE IF NOT EXISTS users (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          username TEXT UNIQUE NOT NULL,
-          password TEXT NOT NULL,
-          role TEXT DEFAULT 'user',
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        );
-      `);
-    }
-
-    // 检查是否已存在admin用户
-    const adminUser = await db.get("SELECT * FROM users WHERE username = 'admin'");
-    
-    if (!adminUser) {
-      console.log('创建默认管理员账户...');
-      await db.run(`
-        INSERT INTO users (username, password, role) 
-        VALUES ('admin', 'admin123', 'admin')
-      `);
-    }
-
-    // 检查sites表是否存在 displayOrder 列
-    const sitesTableInfo = await db.all("PRAGMA table_info(sites)");
-    const hasSitesDisplayOrder = sitesTableInfo.some(col => col.name === 'displayOrder');
-    
-    // 如果不存在，添加 displayOrder 列
-    if (!hasSitesDisplayOrder) {
-      await db.run('ALTER TABLE sites ADD COLUMN displayOrder INTEGER DEFAULT 0');
-    }
-
-    // 检查categories表是否存在 display_order 列
-    const categoriesTableInfo = await db.all("PRAGMA table_info(categories)");
-    const hasCategoriesDisplayOrder = categoriesTableInfo.some(col => col.name === 'display_order');
-    
-    // 如果不存在，添加 display_order 列
-    if (!hasCategoriesDisplayOrder) {
-      await db.run('ALTER TABLE categories ADD COLUMN display_order INTEGER DEFAULT 0');
-      // 初始化现有分类的display_order
-      await db.run('UPDATE categories SET display_order = rowid WHERE display_order IS NULL');
-    }
-
-    console.log('数据库初始化成功');
+    console.log('数据库初始化成功（只读模式）');
   } catch (error) {
     console.error('数据库初始化失败:', error);
     throw error;

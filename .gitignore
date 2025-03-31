@@ -72,3 +72,4 @@ tmp/
 # Editor and IDE files
 .DS_Store
 Thumbs.db 
+.vercel
